@@ -161,7 +161,7 @@
             color: #888;
         }
 
-        /* MAIN SELECTION ARENA (P1 PORTRAIT - GRID '97 - P2 PORTRAIT) */
+        /* MAIN SELECTION ARENA */
         .select-arena {
             display: grid;
             grid-template-columns: 280px 1fr 280px;
@@ -202,7 +202,7 @@
             box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
         }
 
-        .xat-link-tooltip {
+        .xatspace-link-banner {
             position: absolute;
             top: 10px;
             left: 0;
@@ -373,21 +373,6 @@
             text-overflow: ellipsis;
         }
 
-        .grid-cell .cell-xat-label {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 0.45rem;
-            background: rgba(0,0,0,0.9);
-            color: var(--kof-gold);
-            text-align: center;
-            padding: 2px 0;
-            z-index: 6;
-            border-bottom: 1px solid var(--kof-gold);
-        }
-
         .grid-cell.selected-p1 {
             border-color: var(--p1-red) !important;
             box-shadow: 0 0 15px var(--p1-red), inset 0 0 10px var(--p1-red);
@@ -400,11 +385,6 @@
             box-shadow: 0 0 15px var(--p2-blue), inset 0 0 10px var(--p2-blue);
             transform: scale(1.06);
             z-index: 5;
-        }
-
-        .grid-cell.selected-p1.selected-p2 {
-            border-color: var(--kof-gold) !important;
-            box-shadow: 0 0 15px var(--kof-gold), inset 0 0 10px var(--kof-gold);
         }
 
         .grid-cell.hover-cursor {
@@ -557,10 +537,10 @@
 
     <div class="crt-overlay"></div>
 
-    <!-- PRESS START OVERLAY -->
+    <!-- PRESS START OVERLAY (SOLO CLIC) -->
     <div class="arcade-start-overlay" id="startOverlay">
         <div class="insert-coin-title">PRESS START</div>
-        <div class="insert-coin-sub">HAZ CLIC O PRESIONA CUALQUIER TECLA PARA INICIAR EL ARCADE KOF '97</div>
+        <div class="insert-coin-sub">HAZ CLIC PARA INICIAR EL ARCADE KOF '97</div>
     </div>
 
     <div class="kof-container">
@@ -584,9 +564,9 @@
 
         <!-- SELECTION ARENA -->
         <div class="select-arena">
-            <!-- P1 STANDEE (CON REDIRECCIÓN Y MENSAJE XATSPACE) -->
+            <!-- P1 STANDEE -->
             <div class="fighter-standee p1-standee" id="p1Standee" title="Haz clic para visitar XatSpace">
-                <div class="xatspace-link-banner" id="p1Banner">KYO XATSPACE 1</div>
+                <div class="xatspace-link-banner" id="p1Banner">HIROU XATSPACE</div>
                 <div class="standee-img-container" id="p1Portrait">
                     <img src="" alt="P1 Fighter" onerror="this.src='https://placehold.co/400x600/111420/ff2a5f?text=P1+Luchador'">
                 </div>
@@ -600,13 +580,13 @@
 
             <!-- CENTER ROSTER GRID '97 -->
             <div class="roster-grid-container">
-                <div class="turn-banner" id="turnPrompt">PLAYER 1: SELECCIONA TU PELEADOR</div>
+                <div class="turn-banner" id="turnPrompt">HIROU: SELECCIONA TU PELEADOR</div>
                 <div class="kof-grid" id="rosterGrid"></div>
             </div>
 
-            <!-- P2 STANDEE (CON REDIRECCIÓN Y MENSAJE XATSPACE) -->
+            <!-- P2 STANDEE -->
             <div class="fighter-standee p2-standee" id="p2Standee" title="Haz clic para visitar XatSpace">
-                <div class="xatspace-link-banner" id="p2Banner">IORI XATSPACE 2</div>
+                <div class="xatspace-link-banner" id="p2Banner">SIMBA XATSPACE</div>
                 <div class="standee-img-container" id="p2Portrait">
                     <img src="" alt="P2 Fighter" onerror="this.src='https://placehold.co/400x600/111420/00e5ff?text=P2+Luchador'">
                 </div>
@@ -642,31 +622,29 @@
     <audio id="sfxVoice" preload="auto"></audio>
 
     <script>
-        // KOF '97 CHARACTER ROSTER DATA CON ENLACES Y ETIQUETAS XATSPACE
-        const defaultCharacters = [
-            { id: "kyo", name: "Kyo Kusanagi", team: "Japan Team", color: "#ffcc00", img: "https://i.ibb.co/K1gG66D/Dise-o-sin-t-tulo-2.png", voice: "assets/voices/kyo.mp3", xat: "https://xatspace.com/kyo1", label: "KYO XATSPACE 1" },
-            { id: "iori", name: "Iori Yagami", team: "Yagami Team", color: "#ff2a5f", img: "https://i.ibb.co/3Y9yw4z3/Dise-o-sin-t-tulo-6.png", voice: "assets/voices/iori.mp3", xat: "https://xatspace.com/iori2", label: "IORI XATSPACE 2" },
-            { id: "terry", name: "Terry Bogard", team: "Fatal Fury Team", color: "#ff9900", img: "https://i.ibb.co/Q3bx92nJ/Dise-o-sin-t-tulo-7.png", voice: "assets/voices/terry.mp3", xat: "https://xatspace.com/terry3", label: "TERRY XATSPACE 3" },
-            { id: "mai", name: "Mai Shiranui", team: "Super Heroine", color: "#ff33cc", img: "https://i.ibb.co/k2WG43vk/Dise-o-sin-t-tulo-5.png", voice: "assets/voices/mai.mp3", xat: "https://xatspace.com/mai4", label: "MAI XATSPACE 4" },
-            { id: "leona", name: "Leona Heidern", team: "Ikari Team", color: "#33ccff", img: "https://i.ibb.co/4wyYJXGW/Dise-o-sin-t-tulo-8.png", voice: "assets/voices/leona.mp3", xat: "https://xatspace.com/leona5", label: "LEONA XATSPACE 5" },
-            { id: "kula", name: "Kula Diamond", team: "NESTS Team", color: "#00e5ff", img: "https://i.ibb.co/RGwBVR6C/Dise-o-sin-t-tulo-4.png", voice: "assets/voices/kula.mp3", xat: "https://xatspace.com/kula6", label: "KULA XATSPACE 6" },
-            { id: "chris", name: "Orochi Chris", team: "Orochi Team", color: "#cc33ff", img: "https://i.ibb.co/tT9TtC2v/Dise-o-sin-t-tulo-9.png", voice: "assets/voices/chris.mp3", xat: "https://xatspace.com/chris7", label: "CHRIS XATSPACE 7" },
-            { id: "mary", name: "Blue Mary", team: "Special Agent", color: "#33ff66", img: "https://i.ibb.co/GvkJT2Cd/Dise-o-sin-t-tulo-10.png", voice: "assets/voices/mary.mp3", xat: "https://xatspace.com/mary8", label: "MARY XATSPACE 8" },
-            { id: "rock", name: "Rock Howard", team: "Garou Team", color: "#00ffcc", img: "https://i.ibb.co/yc474VCs/Dise-o-sin-t-tulo-11.png", voice: "assets/voices/rock.mp3", xat: "https://xatspace.com/rock9", label: "ROCK XATSPACE 9" },
-            { id: "rugal", name: "Rugal Bernstein", team: "Boss Team", color: "#e74c3c", img: "https://i.ibb.co/TBBmMtrZ/Dise-o-sin-t-tulo-3.png", voice: "assets/voices/rugal.mp3", xat: "https://xatspace.com/rugal10", label: "RUGAL XATSPACE 10" }
+        const characters = [
+            { id: "kyo", name: "Kyo Kusanagi", team: "Japan Team", color: "#ffcc00", img: "https://i.ibb.co/K1gG66D/Dise-o-sin-t-tulo-2.png", voice: "assets/voices/kyo.mp3", xat: "https://xatspace.com/kyo1", label: "HIROU XATSPACE" },
+            { id: "iori", name: "Iori Yagami", team: "Yagami Team", color: "#ff2a5f", img: "https://i.ibb.co/3Y9yw4z3/Dise-o-sin-t-tulo-6.png", voice: "assets/voices/iori.mp3", xat: "https://xatspace.com/iori2", label: "SIMBA XATSPACE" },
+            { id: "terry", name: "Terry Bogard", team: "Fatal Fury Team", color: "#ff9900", img: "https://i.ibb.co/Q3bx92nJ/Dise-o-sin-t-tulo-7.png", voice: "assets/voices/terry.mp3", xat: "https://xatspace.com/terry3", label: "WOLF XATSPACE" },
+            { id: "mai", name: "Mai Shiranui", team: "Super Heroine", color: "#ff33cc", img: "https://i.ibb.co/k2WG43vk/Dise-o-sin-t-tulo-5.png", voice: "assets/voices/mai.mp3", xat: "https://xatspace.com/mai4", label: "FLAME XATSPACE" },
+            { id: "leona", name: "Leona Heidern", team: "Ikari Team", color: "#33ccff", img: "https://i.ibb.co/4wyYJXGW/Dise-o-sin-t-tulo-8.png", voice: "assets/voices/leona.mp3", xat: "https://xatspace.com/leona5", label: "STORM XATSPACE" },
+            { id: "kula", name: "Kula Diamond", team: "NESTS Team", color: "#00e5ff", img: "https://i.ibb.co/RGwBVR6C/Dise-o-sin-t-tulo-4.png", voice: "assets/voices/kula.mp3", xat: "https://xatspace.com/kula6", label: "SIVI XATSPACE" },
+            { id: "chris", name: "Orochi Chris", team: "Orochi Team", color: "#cc33ff", img: "https://i.ibb.co/tT9TtC2v/Dise-o-sin-t-tulo-9.png", voice: "assets/voices/chris.mp3", xat: "https://xatspace.com/chris7", label: "CHAOS XATSPACE" },
+            { id: "mary", name: "Blue Mary", team: "Special Agent", color: "#33ff66", img: "https://i.ibb.co/GvkJT2Cd/Dise-o-sin-t-tulo-10.png", voice: "assets/voices/mary.mp3", xat: "https://xatspace.com/mary8", label: "AGENT XATSPACE" },
+            { id: "rock", name: "Rock Howard", team: "Garou Team", color: "#00ffcc", img: "https://i.ibb.co/yc474VCs/Dise-o-sin-t-tulo-11.png", voice: "assets/voices/rock.mp3", xat: "https://xatspace.com/rock9", label: "GAROU XATSPACE" },
+            { id: "rugal", name: "Rugal Bernstein", team: "Boss Team", color: "#e74c3c", img: "https://i.ibb.co/TBBmMtrZ/Dise-o-sin-t-tulo-3.png", voice: "assets/voices/rugal.mp3", xat: "https://xatspace.com/rugal10", label: "BOSS XATSPACE" }
         ];
 
-        const defaultPlaylist = [
+        const playlist = [
             { src: "assets/0.mp3", title: "酔いどれ知らず", artist: "【Kanaria】" },
             { src: "assets/1.mp3", title: "Esaka!! (KOF Theme)", artist: "【SNK Sound Team】" }
         ];
 
-        let characters = [...defaultCharacters];
-        let playlist = [...defaultPlaylist];
-
+        let currentTrackIndex = 0;
         let cursorIndex = 0;
         let p1Selected = null;
         let p2Selected = null;
+        let autoTourInterval = null;
 
         const rosterGrid = document.getElementById('rosterGrid');
         const p1Name = document.getElementById('p1Name');
@@ -682,18 +660,22 @@
         const p2Standee = document.getElementById('p2Standee');
 
         const turnPrompt = document.getElementById('turnPrompt');
-
-        let audioCtx = null;
-        let lastBeepTime = 0;
+        const startOverlay = document.getElementById('startOverlay');
         const bgmAudio = document.getElementById('bgmAudio');
         const sfxVoice = document.getElementById('sfxVoice');
         const sfxSelect = document.getElementById('sfxSelect');
         const sfxIntro = document.getElementById('sfxIntro');
+        const playBtn = document.getElementById('playBtn');
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
 
         bgmAudio.volume = 0.35;
         sfxVoice.volume = 0.55;
         sfxSelect.volume = 0.35;
         sfxIntro.volume = 0.35;
+
+        let audioCtx = null;
+        let lastBeepTime = 0;
 
         function getAudioContext() {
             if (!audioCtx) {
@@ -747,7 +729,77 @@
             } catch(e) {}
         }
 
-        // REDIRECCIÓN ENCLAVADA EN LOS STANDEES LATERALES
+        function loadTrack(index) {
+            currentTrackIndex = (index + playlist.length) % playlist.length;
+            const track = playlist[currentTrackIndex];
+            bgmAudio.src = track.src;
+            trackTitle.textContent = `BGM: ${track.title}`;
+            trackArtist.textContent = track.artist;
+        }
+
+        // START OVERLAY (SOLO CLIC)
+        startOverlay.addEventListener('click', () => {
+            startOverlay.style.display = 'none';
+            getAudioContext();
+            try {
+                sfxIntro.play().catch(() => {});
+                loadTrack(0);
+                bgmAudio.play().catch(() => {});
+                playBtn.textContent = "⏸";
+                startAutoTour();
+            } catch(e) {}
+        });
+
+        // RECORRIDO AUTOMÁTICO CADA 5 SEGUNDOS (TERMINA EN UNO ALEATORIO)
+        function startAutoTour() {
+            if (autoTourInterval) clearInterval(autoTourInterval);
+            
+            autoTourInterval = setInterval(() => {
+                if (p1Selected && p2Selected) {
+                    clearInterval(autoTourInterval);
+                    return;
+                }
+
+                if (!p1Selected) {
+                    // Mover cursor de forma aleatoria o secuencial para P1
+                    cursorIndex = Math.floor(Math.random() * characters.length);
+                    playRetroNavBeep();
+                    updatePreviews();
+                    renderRosterGrid();
+                } else if (!p2Selected) {
+                    // Mover cursor de forma aleatoria o secuencial para P2
+                    cursorIndex = Math.floor(Math.random() * characters.length);
+                    playRetroNavBeep();
+                    updatePreviews();
+                    renderRosterGrid();
+                }
+            }, 5000);
+        }
+
+        // MUSIC CONTROLS
+        playBtn.addEventListener('click', () => {
+            if (bgmAudio.paused) {
+                bgmAudio.play().catch(() => {});
+                playBtn.textContent = "⏸";
+            } else {
+                bgmAudio.pause();
+                playBtn.textContent = "▶";
+            }
+        });
+
+        document.getElementById('nextTrackBtn').addEventListener('click', () => {
+            loadTrack(currentTrackIndex + 1);
+            bgmAudio.play().catch(() => {});
+            playBtn.textContent = "⏸";
+        });
+
+        document.getElementById('prevTrackBtn').addEventListener('click', () => {
+            loadTrack(currentTrackIndex - 1);
+            bgmAudio.play().catch(() => {});
+            playBtn.textContent = "⏸";
+        });
+
+        // STANDEE CLICKS (XATSPACE)
         p1Standee.addEventListener('click', () => {
             const activeChar = p1Selected || characters[cursorIndex] || characters[0];
             window.open(activeChar.xat, '_blank');
@@ -756,6 +808,56 @@
         p2Standee.addEventListener('click', () => {
             const activeChar = p2Selected || characters[cursorIndex] || characters[1];
             window.open(activeChar.xat, '_blank');
+        });
+
+        // RESET BUTTON
+        document.getElementById('resetVsBtn').addEventListener('click', resetSelection);
+
+        function resetSelection() {
+            p1Selected = null;
+            p2Selected = null;
+            cursorIndex = 0;
+            turnPrompt.textContent = "HIROU: SELECCIONA TU PELEADOR";
+            turnPrompt.style.borderColor = "var(--kof-gold)";
+            turnPrompt.style.color = "#fff";
+            updatePreviews();
+            renderRosterGrid();
+            playSelectSound();
+            startAutoTour();
+        }
+
+        // KEYBOARD NAVIGATION MANUAL
+        window.addEventListener('keydown', (e) => {
+            if (startOverlay.style.display !== 'none') return;
+
+            const cols = 5;
+            const total = characters.length;
+
+            if (e.key === 'ArrowRight') {
+                cursorIndex = (cursorIndex + 1) % total;
+                playRetroNavBeep();
+                updatePreviews();
+                renderRosterGrid();
+            } else if (e.key === 'ArrowLeft') {
+                cursorIndex = (cursorIndex - 1 + total) % total;
+                playRetroNavBeep();
+                updatePreviews();
+                renderRosterGrid();
+            } else if (e.key === 'ArrowDown') {
+                cursorIndex = (cursorIndex + cols) % total;
+                playRetroNavBeep();
+                updatePreviews();
+                renderRosterGrid();
+            } else if (e.key === 'ArrowUp') {
+                cursorIndex = (cursorIndex - cols + total) % total;
+                playRetroNavBeep();
+                updatePreviews();
+                renderRosterGrid();
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                handleSelection(characters[cursorIndex]);
+            } else if (e.key.toLowerCase() === 'r') {
+                resetSelection();
+            }
         });
 
         // RENDER KOF '97 GRID
@@ -784,7 +886,7 @@
                     tagsHtml += `<span class="cursor-tag cursor-p2">P2</span>`;
                 }
 
-                const imgUrl = (char.images && char.images.icon) ? char.images.icon : (char.img || char.image);
+                const imgUrl = char.img;
 
                 slot.innerHTML = `
                     ${tagsHtml}
@@ -815,171 +917,46 @@
 
             // Preview Player 1
             const charP1 = p1Selected || (!p1Selected ? currentChar : characters[0]);
-            const imgP1 = (charP1.images && charP1.images.portrait) ? charP1.images.portrait : (charP1.img || charP1.image);
             p1Name.textContent = charP1.name;
-            p1Team.textContent = charP1.team || "JAPAN TEAM";
-            p1PortraitImg.src = imgP1;
-            p1Banner.textContent = charP1.label || `${charP1.name.toUpperCase()} XATSPACE`;
+            p1Team.textContent = charP1.team;
+            p1PortraitImg.src = charP1.img;
+            p1Banner.textContent = charP1.label;
 
             // Preview Player 2
             const charP2 = p2Selected || (p1Selected ? currentChar : characters[1]);
-            const imgP2 = (charP2.images && charP2.images.portrait) ? charP2.images.portrait : (charP2.img || charP2.image);
             p2Name.textContent = charP2.name;
-            p2Team.textContent = charP2.team || "YAGAMI TEAM";
-            p2PortraitImg.src = imgP2;
-            p2Banner.textContent = charP2.label || `${charP2.name.toUpperCase()} XATSPACE`;
+            p2Team.textContent = charP2.team;
+            p2PortraitImg.src = charP2.img;
+            p2Banner.textContent = charP2.label;
         }
 
         function handleSelection(character) {
             if (!p1Selected) {
                 p1Selected = character;
                 playSelectSound();
-                const voiceUrl = (character.audio && character.audio.winQuote) ? character.audio.winQuote : character.voice;
-                playVoice(voiceUrl);
+                playVoice(character.voice);
 
-                turnPrompt.textContent = "PLAYER 2: SELECCIONA TU PELEADOR";
+                turnPrompt.textContent = "SIMBA: SELECCIONA TU PELEADOR";
                 turnPrompt.style.borderColor = "#00e5ff";
                 turnPrompt.style.color = "#00e5ff";
             } else if (!p2Selected) {
                 p2Selected = character;
                 playSelectSound();
-                const voiceUrl = (character.audio && character.audio.winQuote) ? character.audio.winQuote : character.voice;
-                playVoice(voiceUrl);
+                playVoice(character.voice);
 
                 turnPrompt.textContent = "¡DUELO LISTO! HAZ CLIC EN LOS STANDEES PARA VISITAR XATSPACE";
                 turnPrompt.style.borderColor = "#ffcc00";
                 turnPrompt.style.color = "#ffcc00";
+                if (autoTourInterval) clearInterval(autoTourInterval);
             }
 
             updatePreviews();
             renderRosterGrid();
         }
 
-        function resetSelection() {
-            p1Selected = null;
-            p2Selected = null;
-            cursorIndex = 0;
-            turnPrompt.textContent = "PLAYER 1: SELECCIONA TU PELEADOR";
-            turnPrompt.style.borderColor = "#ffcc00";
-            turnPrompt.style.color = "#ffffff";
-            updatePreviews();
-            renderRosterGrid();
-        }
-
-        window.addEventListener('keydown', (e) => {
-            const cols = 5;
-            let moved = false;
-
-            if (e.key === 'r' || e.key === 'R' || e.key === 'Backspace') {
-                resetSelection();
-                return;
-            }
-
-            if (p2Selected) return;
-
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                cursorIndex = (cursorIndex + 1) % characters.length;
-                moved = true;
-            } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                cursorIndex = (cursorIndex - 1 + characters.length) % characters.length;
-                moved = true;
-            } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-                if (cursorIndex + cols < characters.length) {
-                    cursorIndex += cols;
-                    moved = true;
-                }
-            } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-                if (cursorIndex - cols >= 0) {
-                    cursorIndex -= cols;
-                    moved = true;
-                }
-            } else if (e.key === 'Enter' || e.key === ' ') {
-                handleSelection(characters[cursorIndex]);
-            }
-
-            if (moved) {
-                playRetroNavBeep();
-                updatePreviews();
-                renderRosterGrid();
-            }
-        });
-
-        document.getElementById('resetVsBtn').addEventListener('click', resetSelection);
-
-        // BGM MUSIC PLAYER
-        let trackIndex = 0;
-        let isPlaying = false;
-
-        const playBtn = document.getElementById('playBtn');
-        const prevTrackBtn = document.getElementById('prevTrackBtn');
-        const nextTrackBtn = document.getElementById('nextTrackBtn');
-        const trackTitleEl = document.getElementById('trackTitle');
-        const trackArtistEl = document.getElementById('trackArtist');
-
-        function loadMusic(idx) {
-            if (playlist.length === 0) return;
-            trackIndex = (idx + playlist.length) % playlist.length;
-            const currentTrack = playlist[trackIndex];
-            bgmAudio.src = currentTrack.src;
-            trackTitleEl.textContent = `BGM: ${currentTrack.title || currentTrack.src}`;
-            trackArtistEl.textContent = currentTrack.artist || "【Asset】";
-        }
-
-        playBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                bgmAudio.pause();
-                isPlaying = false;
-                playBtn.textContent = '▶';
-            } else {
-                bgmAudio.play().then(() => {
-                    isPlaying = true;
-                    playBtn.textContent = '❚❚';
-                }).catch(e => {});
-            }
-        });
-
-        nextTrackBtn.addEventListener('click', () => {
-            loadMusic(trackIndex + 1);
-            if (isPlaying) bgmAudio.play().catch(e => {});
-        });
-
-        prevTrackBtn.addEventListener('click', () => {
-            loadMusic(trackIndex - 1);
-            if (isPlaying) bgmAudio.play().catch(e => {});
-        });
-
-        // SPRING BOOT REST API FETCH WITH FALLBACK
-        async function fetchAssets() {
-            try {
-                const [resChars, resPlaylist] = await Promise.all([
-                    fetch('/api/assets/characters').then(r => r.ok ? r.json() : null).catch(() => null),
-                    fetch('/api/assets/playlist').then(r => r.ok ? r.json() : null).catch(() => null)
-                ]);
-                if (resChars && resChars.length) characters = resChars;
-                if (resPlaylist && resPlaylist.length) playlist = resPlaylist;
-            } catch(e) {}
-            
-            loadMusic(0);
-            updatePreviews();
-            renderRosterGrid();
-        }
-
-        // ARCADE TIMER COUNTDOWN
-        let timerVal = 99;
-        setInterval(() => {
-            if (timerVal > 0) {
-                timerVal--;
-                document.getElementById('arcadeTimer').textContent = timerVal < 10 ? '0' + timerVal : timerVal;
-            }
-        }, 1000);
-
-        // PRESS START OVERLAY DISMISS
-        document.getElementById('startOverlay').addEventListener('click', () => {
-            getAudioContext();
-            document.getElementById('startOverlay').style.display = 'none';
-            sfxIntro.play().catch(e => {});
-            fetchAssets();
-        });
+        // Initial setup
+        updatePreviews();
+        renderRosterGrid();
     </script>
 </body>
 </html>
