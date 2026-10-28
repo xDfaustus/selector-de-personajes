@@ -666,6 +666,26 @@
         const p2Banner = document.getElementById('p2Banner');
         const p2Standee = document.getElementById('p2Standee');
 
+        // Contador arcade: inicia en 99 y disminuye cada segundo.
+        const arcadeTimer = document.getElementById('arcadeTimer');
+        let countdownInterval = null;
+
+        function startArcadeCountdown() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            let seconds = 99;
+            arcadeTimer.textContent = seconds;
+
+            countdownInterval = setInterval(() => {
+                if (seconds > 0) {
+                    seconds--;
+                    arcadeTimer.textContent = String(seconds).padStart(2, '0');
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+            }, 1000);
+        }
+
         const turnPrompt = document.getElementById('turnPrompt');
         const startOverlay = document.getElementById('startOverlay');
         const bgmAudio = document.getElementById('bgmAudio');
@@ -771,6 +791,7 @@
         // START OVERLAY (SOLO CLIC)
         startOverlay.addEventListener('click', () => {
             startOverlay.style.display = 'none';
+            startArcadeCountdown();
             getAudioContext();
             try {
                 sfxIntro.play().catch(() => {});
