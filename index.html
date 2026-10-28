@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The King of Fighters '97 - Character Select</title>
+    <!-- Retro Arcade Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --p1-red: #ff2a5f;
+            --p2-blue: #00e5ff;
+            --kof-gold: #ffcc00;
+            --kof-orange: #ff6600;
+            --bg-dark: #050608;
+            --panel-bg: rgba(12, 14, 24, 0.92);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* CRT Arcade Screen Effect */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .kof-container {
+            width: 100%;
+            max-width: 1240px;
+            height: 100vh;
+            max-height: 820px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            padding: 12px 20px;
+            background: radial-gradient(circle at center, #101428 0%, #040508 100%);
+            border: 4px solid #1a1e36;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9), 0 0 30px rgba(255,204,0,0.25);
+        }
+
+        /* HEADER KOF '97 ARCADE */
+        .kof-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--kof-gold);
+            background: rgba(8, 10, 16, 0.9);
+            padding: 8px 18px;
+            clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+            box-shadow: 0 4px 15px rgba(255,204,0,0.25);
+            z-index: 20;
+        }
+
+        .kof-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.1rem, 2.2vw, 1.8rem);
+            font-weight: 900;
+            font-style: italic;
+            color: #fff;
+            text-shadow: 3px 3px 0px #ff3300, 5px 5px 0px #000;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .kof-subtitle {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.65rem;
+            color: var(--kof-gold);
+            margin-left: 8px;
+            text-shadow: 0 0 8px var(--kof-orange);
+        }
+
+        /* VS EMBLEM TOP CENTER */
+        .arcade-vs-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(5, 6, 10, 0.95);
+            border: 2px solid var(--kof-gold);
+            padding: 4px 16px;
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(255,204,0,0.4);
+        }
+
+        .vs-badge-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.4rem;
+            color: var(--kof-gold);
+            text-shadow: 3px 3px 0 #880000, 0 0 15px var(--kof-gold);
+            animation: pulseVS 1s infinite alternate;
+        }
+
+        .arcade-timer {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1.2rem;
+            color: #ff3366;
+            background: #000;
+            padding: 2px 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            box-shadow: inset 0 0 5px #ff0000;
+        }
+
+        @keyframes pulseVS {
+            from { transform: scale(0.95); filter: drop-shadow(0 0 5px var(--kof-gold)); }
+            to { transform: scale(1.08); filter: drop-shadow(0 0 15px var(--kof-orange)); }
+        }
+
+        .shirou-badge {
+            background: #0d0f18;
+            border: 2px solid var(--kof-gold);
+            padding: 4px 12px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+
+        .shirou-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff3366, #ffcc00, #00e5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .shirou-id {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55rem;
+            color: #888;
+        }
+
+        /* MAIN SELECTION ARENA (P1 PORTRAIT - GRID '97 - P2 PORTRAIT) */
+        .select-arena {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 15px;
+            align-items: center;
+            height: 480px;
+            margin: 10px 0;
+        }
+
+        /* FIGHTER STANDEES */
+        .fighter-standee {
+            position: relative;
+            height: 100%;
+            background: var(--panel-bg);
+            border: 3px solid #333;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            cursor: pointer;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        }
+
+        .fighter-standee:hover {
+            transform: scale(1.02);
+        }
+
+        .fighter-standee.p1-standee {
+            border-color: var(--p1-red);
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+            box-shadow: 0 0 20px rgba(255, 42, 95, 0.3);
+        }
+
+        .fighter-standee.p2-standee {
+            border-color: var(--p2-blue);
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+        }
+
+        .xat-link-tooltip {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            color: var(--kof-gold);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55rem;
+            text-align: center;
+            padding: 6px 4px;
+            border-top: 1px solid var(--kof-gold);
+            border-bottom: 1px solid var(--kof-gold);
+            z-index: 12;
+            letter-spacing: 1px;
+            animation: pulseGlow 1.5s infinite alternate;
+        }
+
+        .standee-img-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0; left: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .standee-img-container img {
+            width: 130%;
+            height: 110%;
+            object-fit: cover;
+            object-position: center bottom;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.9));
+            transition: transform 0.2s ease;
+        }
+
+        .p1-standee .standee-img-container img { left: -15%; }
+        .p2-standee .standee-img-container img { right: -15%; transform: scaleX(-1); }
+
+        .standee-info {
+            position: relative;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
+            padding: 15px;
+        }
+
+        .tag-banner {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .p1-tag { background: var(--p1-red); color: #fff; }
+        .p2-tag { background: var(--p2-blue); color: #000; }
+
+        .fighter-name-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,204,0,0.5);
+        }
+
+        .fighter-team-display {
+            font-size: 0.85rem;
+            color: var(--kof-gold);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .power-gauge {
+            width: 100%;
+            height: 10px;
+            background: #222;
+            border: 1px solid #555;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .power-fill {
+            height: 100%;
+            width: 85%;
+            background: linear-gradient(90deg, #ff9900, #ff0055);
+            box-shadow: 0 0 8px #ff9900;
+        }
+
+        /* ROSTER GRID KOF '97 STYLE */
+        .roster-grid-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .turn-banner {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.75rem;
+            color: #fff;
+            background: rgba(0,0,0,0.85);
+            border: 2px solid var(--kof-gold);
+            padding: 8px 16px;
+            margin-bottom: 12px;
+            text-align: center;
+            animation: pulseGlow 1.2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 5px var(--kof-gold); }
+            100% { box-shadow: 0 0 18px var(--kof-gold); }
+        }
+
+        .kof-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 14px;
+            border: 3px solid #3d425a;
+            box-shadow: inset 0 0 20px #000, 0 0 15px rgba(0,0,0,0.8);
+        }
+
+        .grid-cell {
+            width: 82px;
+            height: 96px;
+            background: #111420;
+            border: 2px solid #3d425a;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .grid-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            filter: grayscale(25%) brightness(0.85);
+            transition: filter 0.2s ease;
+        }
+
+        .grid-cell:hover img {
+            filter: grayscale(0%) brightness(1.15);
+        }
+
+        .grid-cell .cell-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.55rem;
+            font-weight: 800;
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            text-align: center;
+            padding: 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .grid-cell .cell-xat-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.45rem;
+            background: rgba(0,0,0,0.9);
+            color: var(--kof-gold);
+            text-align: center;
+            padding: 2px 0;
+            z-index: 6;
+            border-bottom: 1px solid var(--kof-gold);
+        }
+
+        .grid-cell.selected-p1 {
+            border-color: var(--p1-red) !important;
+            box-shadow: 0 0 15px var(--p1-red), inset 0 0 10px var(--p1-red);
+            transform: scale(1.06);
+            z-index: 5;
+        }
+
+        .grid-cell.selected-p2 {
+            border-color: var(--p2-blue) !important;
+            box-shadow: 0 0 15px var(--p2-blue), inset 0 0 10px var(--p2-blue);
+            transform: scale(1.06);
+            z-index: 5;
+        }
+
+        .grid-cell.selected-p1.selected-p2 {
+            border-color: var(--kof-gold) !important;
+            box-shadow: 0 0 15px var(--kof-gold), inset 0 0 10px var(--kof-gold);
+        }
+
+        .grid-cell.hover-cursor {
+            border-color: var(--kof-gold);
+            box-shadow: 0 0 12px var(--kof-gold);
+        }
+
+        .cursor-tag {
+            position: absolute;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5rem;
+            padding: 2px 4px;
+            z-index: 10;
+            font-weight: bold;
+        }
+
+        .cursor-p1 { top: 16px; left: 2px; background: var(--p1-red); color: #fff; }
+        .cursor-p2 { bottom: 16px; right: 2px; background: var(--p2-blue); color: #000; }
+
+        /* FOOTER & BGM MUSIC PLAYER BAR */
+        .kof-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 12, 18, 0.95);
+            border-top: 2px solid var(--kof-gold);
+            padding: 8px 16px;
+            margin-top: 5px;
+            z-index: 10;
+        }
+
+        .arcade-music-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #111;
+            border: 1px solid #444;
+            padding: 6px 14px;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(255,204,0,0.2);
+            width: 360px;
+        }
+
+        .music-btn {
+            background: var(--kof-gold);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .music-btn:hover { transform: scale(1.1); }
+
+        .track-display-box {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .track-display {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55rem;
+            color: #ffcc00;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-sub {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.75rem;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-reset-vs {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--kof-gold), var(--kof-orange));
+            color: #000;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(255,204,0,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-reset-vs:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,204,0,0.8);
+        }
+
+        /* OVERLAY ARCADE PRESS START */
+        .arcade-start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 4, 8, 0.96);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            cursor: pointer;
+        }
+
+        .insert-coin-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(1.2rem, 3vw, 2.2rem);
+            color: var(--kof-gold);
+            text-shadow: 4px 4px 0px #ff0000, 0 0 20px var(--kof-gold);
+            animation: blinkText 1s infinite;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .insert-coin-sub {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: #888;
+            letter-spacing: 2px;
+        }
+
+        @keyframes blinkText {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.2; }
+        }
+
+        @media (max-width: 900px) {
+            .select-arena { grid-template-columns: 1fr; height: auto; }
+            .fighter-standee { height: 180px; }
+            .p1-standee, .p2-standee { clip-path: none; }
+            .kof-grid { grid-template-columns: repeat(5, 1fr); }
+            .grid-cell { width: 62px; height: 75px; }
+            .kof-container { height: auto; max-height: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="crt-overlay"></div>
+
+    <!-- PRESS START OVERLAY -->
+    <div class="arcade-start-overlay" id="startOverlay">
+        <div class="insert-coin-title">PRESS START</div>
+        <div class="insert-coin-sub">HAZ CLIC O PRESIONA CUALQUIER TECLA PARA INICIAR EL ARCADE KOF '97</div>
+    </div>
+
+    <div class="kof-container">
+        <!-- HEADER KOF '97 -->
+        <div class="kof-header">
+            <div>
+                <span class="kof-logo">THE KING OF FIGHTERS</span>
+                <span class="kof-subtitle">'97</span>
+            </div>
+            
+            <div class="arcade-vs-center">
+                <span class="vs-badge-text">VS</span>
+                <span class="arcade-timer" id="arcadeTimer">99</span>
+            </div>
+
+            <div class="shirou-badge">
+                <span class="shirou-text">҂shirou</span>
+                <span class="shirou-id">(1525823861)</span>
+            </div>
+        </div>
+
+        <!-- SELECTION ARENA -->
+        <div class="select-arena">
+            <!-- P1 STANDEE (CON REDIRECCIÓN Y MENSAJE XATSPACE) -->
+            <div class="fighter-standee p1-standee" id="p1Standee" title="Haz clic para visitar XatSpace">
+                <div class="xatspace-link-banner" id="p1Banner">KYO XATSPACE 1</div>
+                <div class="standee-img-container" id="p1Portrait">
+                    <img src="" alt="P1 Fighter" onerror="this.src='https://placehold.co/400x600/111420/ff2a5f?text=P1+Luchador'">
+                </div>
+                <div class="standee-info">
+                    <span class="tag-banner p1-tag">PLAYER 1</span>
+                    <div class="fighter-name-display" id="p1Name">KYO KUSANAGI</div>
+                    <div class="fighter-team-display" id="p1Team">JAPAN TEAM</div>
+                    <div class="power-gauge"><div class="power-fill"></div></div>
+                </div>
+            </div>
+
+            <!-- CENTER ROSTER GRID '97 -->
+            <div class="roster-grid-container">
+                <div class="turn-banner" id="turnPrompt">PLAYER 1: SELECCIONA TU PELEADOR</div>
+                <div class="kof-grid" id="rosterGrid"></div>
+            </div>
+
+            <!-- P2 STANDEE (CON REDIRECCIÓN Y MENSAJE XATSPACE) -->
+            <div class="fighter-standee p2-standee" id="p2Standee" title="Haz clic para visitar XatSpace">
+                <div class="xatspace-link-banner" id="p2Banner">IORI XATSPACE 2</div>
+                <div class="standee-img-container" id="p2Portrait">
+                    <img src="" alt="P2 Fighter" onerror="this.src='https://placehold.co/400x600/111420/00e5ff?text=P2+Luchador'">
+                </div>
+                <div class="standee-info">
+                    <span class="tag-banner p2-tag">PLAYER 2</span>
+                    <div class="fighter-name-display" id="p2Name">IORI YAGAMI</div>
+                    <div class="fighter-team-display" id="p2Team">YAGAMI TEAM</div>
+                    <div class="power-gauge"><div class="power-fill" style="background: linear-gradient(90deg, #00e5ff, #0055ff);"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER & BGM PLAYER -->
+        <div class="kof-footer">
+            <div class="arcade-music-box">
+                <button class="music-btn" id="prevTrackBtn" title="Pista Anterior">⏮</button>
+                <button class="music-btn" id="playBtn" title="Reproducir / Pausa">▶</button>
+                <button class="music-btn" id="nextTrackBtn" title="Siguiente Pista">⏭</button>
+                <div class="track-display-box">
+                    <div class="track-display" id="trackTitle">BGM: 酔いどれ知らず</div>
+                    <div class="track-sub" id="trackArtist">【Kanaria】</div>
+                </div>
+            </div>
+
+            <button class="btn-reset-vs" id="resetVsBtn">REINICIAR SELECCIÓN [R]</button>
+        </div>
+    </div>
+
+    <!-- AUDIO ELEMENTS -->
+    <audio id="bgmAudio" preload="auto" loop></audio>
+    <audio src="assets/A.mp3" id="sfxIntro" preload="auto"></audio>
+    <audio src="assets/C.mp3" id="sfxSelect" preload="auto"></audio>
+    <audio id="sfxVoice" preload="auto"></audio>
+
+    <script>
+        // KOF '97 CHARACTER ROSTER DATA CON ENLACES Y ETIQUETAS XATSPACE
+        const defaultCharacters = [
+            { id: "kyo", name: "Kyo Kusanagi", team: "Japan Team", color: "#ffcc00", img: "https://i.ibb.co/K1gG66D/Dise-o-sin-t-tulo-2.png", voice: "assets/voices/kyo.mp3", xat: "https://xatspace.com/kyo1", label: "KYO XATSPACE 1" },
+            { id: "iori", name: "Iori Yagami", team: "Yagami Team", color: "#ff2a5f", img: "https://i.ibb.co/3Y9yw4z3/Dise-o-sin-t-tulo-6.png", voice: "assets/voices/iori.mp3", xat: "https://xatspace.com/iori2", label: "IORI XATSPACE 2" },
+            { id: "terry", name: "Terry Bogard", team: "Fatal Fury Team", color: "#ff9900", img: "https://i.ibb.co/Q3bx92nJ/Dise-o-sin-t-tulo-7.png", voice: "assets/voices/terry.mp3", xat: "https://xatspace.com/terry3", label: "TERRY XATSPACE 3" },
+            { id: "mai", name: "Mai Shiranui", team: "Super Heroine", color: "#ff33cc", img: "https://i.ibb.co/k2WG43vk/Dise-o-sin-t-tulo-5.png", voice: "assets/voices/mai.mp3", xat: "https://xatspace.com/mai4", label: "MAI XATSPACE 4" },
+            { id: "leona", name: "Leona Heidern", team: "Ikari Team", color: "#33ccff", img: "https://i.ibb.co/4wyYJXGW/Dise-o-sin-t-tulo-8.png", voice: "assets/voices/leona.mp3", xat: "https://xatspace.com/leona5", label: "LEONA XATSPACE 5" },
+            { id: "kula", name: "Kula Diamond", team: "NESTS Team", color: "#00e5ff", img: "https://i.ibb.co/RGwBVR6C/Dise-o-sin-t-tulo-4.png", voice: "assets/voices/kula.mp3", xat: "https://xatspace.com/kula6", label: "KULA XATSPACE 6" },
+            { id: "chris", name: "Orochi Chris", team: "Orochi Team", color: "#cc33ff", img: "https://i.ibb.co/tT9TtC2v/Dise-o-sin-t-tulo-9.png", voice: "assets/voices/chris.mp3", xat: "https://xatspace.com/chris7", label: "CHRIS XATSPACE 7" },
+            { id: "mary", name: "Blue Mary", team: "Special Agent", color: "#33ff66", img: "https://i.ibb.co/GvkJT2Cd/Dise-o-sin-t-tulo-10.png", voice: "assets/voices/mary.mp3", xat: "https://xatspace.com/mary8", label: "MARY XATSPACE 8" },
+            { id: "rock", name: "Rock Howard", team: "Garou Team", color: "#00ffcc", img: "https://i.ibb.co/yc474VCs/Dise-o-sin-t-tulo-11.png", voice: "assets/voices/rock.mp3", xat: "https://xatspace.com/rock9", label: "ROCK XATSPACE 9" },
+            { id: "rugal", name: "Rugal Bernstein", team: "Boss Team", color: "#e74c3c", img: "https://i.ibb.co/TBBmMtrZ/Dise-o-sin-t-tulo-3.png", voice: "assets/voices/rugal.mp3", xat: "https://xatspace.com/rugal10", label: "RUGAL XATSPACE 10" }
+        ];
+
+        const defaultPlaylist = [
+            { src: "assets/0.mp3", title: "酔いどれ知らず", artist: "【Kanaria】" },
+            { src: "assets/1.mp3", title: "Esaka!! (KOF Theme)", artist: "【SNK Sound Team】" }
+        ];
+
+        let characters = [...defaultCharacters];
+        let playlist = [...defaultPlaylist];
+
+        let cursorIndex = 0;
+        let p1Selected = null;
+        let p2Selected = null;
+
+        const rosterGrid = document.getElementById('rosterGrid');
+        const p1Name = document.getElementById('p1Name');
+        const p1Team = document.getElementById('p1Team');
+        const p1PortraitImg = document.getElementById('p1Portrait').querySelector('img');
+        const p1Banner = document.getElementById('p1Banner');
+        const p1Standee = document.getElementById('p1Standee');
+
+        const p2Name = document.getElementById('p2Name');
+        const p2Team = document.getElementById('p2Team');
+        const p2PortraitImg = document.getElementById('p2Portrait').querySelector('img');
+        const p2Banner = document.getElementById('p2Banner');
+        const p2Standee = document.getElementById('p2Standee');
+
+        const turnPrompt = document.getElementById('turnPrompt');
+
+        let audioCtx = null;
+        let lastBeepTime = 0;
+        const bgmAudio = document.getElementById('bgmAudio');
+        const sfxVoice = document.getElementById('sfxVoice');
+        const sfxSelect = document.getElementById('sfxSelect');
+        const sfxIntro = document.getElementById('sfxIntro');
+
+        bgmAudio.volume = 0.35;
+        sfxVoice.volume = 0.55;
+        sfxSelect.volume = 0.35;
+        sfxIntro.volume = 0.35;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playRetroNavBeep() {
+            const nowTime = Date.now();
+            if (nowTime - lastBeepTime < 60) return;
+            lastBeepTime = nowTime;
+
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(520, now);
+                osc.frequency.setValueAtTime(1040, now + 0.02);
+
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } catch(e) {}
+        }
+
+        function playVoice(src) {
+            if (!src) return;
+            try {
+                sfxVoice.pause();
+                sfxVoice.src = src;
+                sfxVoice.currentTime = 0;
+                sfxVoice.play().catch(e => {});
+            } catch(e) {}
+        }
+
+        function playSelectSound() {
+            try {
+                sfxSelect.currentTime = 0;
+                sfxSelect.play().catch(() => {});
+            } catch(e) {}
+        }
+
+        // REDIRECCIÓN ENCLAVADA EN LOS STANDEES LATERALES
+        p1Standee.addEventListener('click', () => {
+            const activeChar = p1Selected || characters[cursorIndex] || characters[0];
+            window.open(activeChar.xat, '_blank');
+        });
+
+        p2Standee.addEventListener('click', () => {
+            const activeChar = p2Selected || characters[cursorIndex] || characters[1];
+            window.open(activeChar.xat, '_blank');
+        });
+
+        // RENDER KOF '97 GRID
+        function renderRosterGrid() {
+            rosterGrid.innerHTML = '';
+            characters.forEach((char, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'grid-cell';
+                
+                let tagsHtml = '';
+
+                if (index === cursorIndex && !p2Selected) {
+                    const activePlayerTag = !p1Selected ? 'P1' : 'P2';
+                    const activeClass = !p1Selected ? 'cursor-p1' : 'cursor-p2';
+                    tagsHtml += `<span class="cursor-tag ${activeClass}">${activePlayerTag}</span>`;
+                    slot.classList.add('hover-cursor');
+                }
+
+                if (p1Selected && p1Selected.id === char.id) {
+                    slot.classList.add('selected-p1');
+                    tagsHtml += `<span class="cursor-tag cursor-p1">P1</span>`;
+                }
+
+                if (p2Selected && p2Selected.id === char.id) {
+                    slot.classList.add('selected-p2');
+                    tagsHtml += `<span class="cursor-tag cursor-p2">P2</span>`;
+                }
+
+                const imgUrl = (char.images && char.images.icon) ? char.images.icon : (char.img || char.image);
+
+                slot.innerHTML = `
+                    ${tagsHtml}
+                    <img src="${imgUrl}" alt="${char.name}" onerror="this.src='https://placehold.co/100x120/111420/ffffff?text=${encodeURIComponent(char.name)}'">
+                    <div class="cell-name">${char.name}</div>
+                `;
+
+                slot.addEventListener('click', () => {
+                    cursorIndex = index;
+                    handleSelection(characters[index]);
+                });
+
+                slot.addEventListener('mouseenter', () => {
+                    if (cursorIndex !== index && !p2Selected) {
+                        cursorIndex = index;
+                        playRetroNavBeep();
+                        updatePreviews();
+                        renderRosterGrid();
+                    }
+                });
+
+                rosterGrid.appendChild(slot);
+            });
+        }
+
+        function updatePreviews() {
+            const currentChar = characters[cursorIndex] || characters[0];
+
+            // Preview Player 1
+            const charP1 = p1Selected || (!p1Selected ? currentChar : characters[0]);
+            const imgP1 = (charP1.images && charP1.images.portrait) ? charP1.images.portrait : (charP1.img || charP1.image);
+            p1Name.textContent = charP1.name;
+            p1Team.textContent = charP1.team || "JAPAN TEAM";
+            p1PortraitImg.src = imgP1;
+            p1Banner.textContent = charP1.label || `${charP1.name.toUpperCase()} XATSPACE`;
+
+            // Preview Player 2
+            const charP2 = p2Selected || (p1Selected ? currentChar : characters[1]);
+            const imgP2 = (charP2.images && charP2.images.portrait) ? charP2.images.portrait : (charP2.img || charP2.image);
+            p2Name.textContent = charP2.name;
+            p2Team.textContent = charP2.team || "YAGAMI TEAM";
+            p2PortraitImg.src = imgP2;
+            p2Banner.textContent = charP2.label || `${charP2.name.toUpperCase()} XATSPACE`;
+        }
+
+        function handleSelection(character) {
+            if (!p1Selected) {
+                p1Selected = character;
+                playSelectSound();
+                const voiceUrl = (character.audio && character.audio.winQuote) ? character.audio.winQuote : character.voice;
+                playVoice(voiceUrl);
+
+                turnPrompt.textContent = "PLAYER 2: SELECCIONA TU PELEADOR";
+                turnPrompt.style.borderColor = "#00e5ff";
+                turnPrompt.style.color = "#00e5ff";
+            } else if (!p2Selected) {
+                p2Selected = character;
+                playSelectSound();
+                const voiceUrl = (character.audio && character.audio.winQuote) ? character.audio.winQuote : character.voice;
+                playVoice(voiceUrl);
+
+                turnPrompt.textContent = "¡DUELO LISTO! HAZ CLIC EN LOS STANDEES PARA VISITAR XATSPACE";
+                turnPrompt.style.borderColor = "#ffcc00";
+                turnPrompt.style.color = "#ffcc00";
+            }
+
+            updatePreviews();
+            renderRosterGrid();
+        }
+
+        function resetSelection() {
+            p1Selected = null;
+            p2Selected = null;
+            cursorIndex = 0;
+            turnPrompt.textContent = "PLAYER 1: SELECCIONA TU PELEADOR";
+            turnPrompt.style.borderColor = "#ffcc00";
+            turnPrompt.style.color = "#ffffff";
+            updatePreviews();
+            renderRosterGrid();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const cols = 5;
+            let moved = false;
+
+            if (e.key === 'r' || e.key === 'R' || e.key === 'Backspace') {
+                resetSelection();
+                return;
+            }
+
+            if (p2Selected) return;
+
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                cursorIndex = (cursorIndex + 1) % characters.length;
+                moved = true;
+            } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                cursorIndex = (cursorIndex - 1 + characters.length) % characters.length;
+                moved = true;
+            } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                if (cursorIndex + cols < characters.length) {
+                    cursorIndex += cols;
+                    moved = true;
+                }
+            } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                if (cursorIndex - cols >= 0) {
+                    cursorIndex -= cols;
+                    moved = true;
+                }
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                handleSelection(characters[cursorIndex]);
+            }
+
+            if (moved) {
+                playRetroNavBeep();
+                updatePreviews();
+                renderRosterGrid();
+            }
+        });
+
+        document.getElementById('resetVsBtn').addEventListener('click', resetSelection);
+
+        // BGM MUSIC PLAYER
+        let trackIndex = 0;
+        let isPlaying = false;
+
+        const playBtn = document.getElementById('playBtn');
+        const prevTrackBtn = document.getElementById('prevTrackBtn');
+        const nextTrackBtn = document.getElementById('nextTrackBtn');
+        const trackTitleEl = document.getElementById('trackTitle');
+        const trackArtistEl = document.getElementById('trackArtist');
+
+        function loadMusic(idx) {
+            if (playlist.length === 0) return;
+            trackIndex = (idx + playlist.length) % playlist.length;
+            const currentTrack = playlist[trackIndex];
+            bgmAudio.src = currentTrack.src;
+            trackTitleEl.textContent = `BGM: ${currentTrack.title || currentTrack.src}`;
+            trackArtistEl.textContent = currentTrack.artist || "【Asset】";
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                bgmAudio.pause();
+                isPlaying = false;
+                playBtn.textContent = '▶';
+            } else {
+                bgmAudio.play().then(() => {
+                    isPlaying = true;
+                    playBtn.textContent = '❚❚';
+                }).catch(e => {});
+            }
+        });
+
+        nextTrackBtn.addEventListener('click', () => {
+            loadMusic(trackIndex + 1);
+            if (isPlaying) bgmAudio.play().catch(e => {});
+        });
+
+        prevTrackBtn.addEventListener('click', () => {
+            loadMusic(trackIndex - 1);
+            if (isPlaying) bgmAudio.play().catch(e => {});
+        });
+
+        // SPRING BOOT REST API FETCH WITH FALLBACK
+        async function fetchAssets() {
+            try {
+                const [resChars, resPlaylist] = await Promise.all([
+                    fetch('/api/assets/characters').then(r => r.ok ? r.json() : null).catch(() => null),
+                    fetch('/api/assets/playlist').then(r => r.ok ? r.json() : null).catch(() => null)
+                ]);
+                if (resChars && resChars.length) characters = resChars;
+                if (resPlaylist && resPlaylist.length) playlist = resPlaylist;
+            } catch(e) {}
+            
+            loadMusic(0);
+            updatePreviews();
+            renderRosterGrid();
+        }
+
+        // ARCADE TIMER COUNTDOWN
+        let timerVal = 99;
+        setInterval(() => {
+            if (timerVal > 0) {
+                timerVal--;
+                document.getElementById('arcadeTimer').textContent = timerVal < 10 ? '0' + timerVal : timerVal;
+            }
+        }, 1000);
+
+        // PRESS START OVERLAY DISMISS
+        document.getElementById('startOverlay').addEventListener('click', () => {
+            getAudioContext();
+            document.getElementById('startOverlay').style.display = 'none';
+            sfxIntro.play().catch(e => {});
+            fetchAssets();
+        });
+    </script>
+</body>
+</html>
