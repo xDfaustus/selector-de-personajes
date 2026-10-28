@@ -644,7 +644,14 @@
         let cursorIndex = 0;
         let p1Selected = null;
         let p2Selected = null;
-        let autoTourInterval = null;
+        let p1TourInterval = null;
+        let p2TourInterval = null;
+        let p1TourTimeout = null;
+        let p2TourTimeout = null;
+        let p1PreviewIndex = 0;
+        let p2PreviewIndex = 1;
+        const TOUR_DURATION = 3000;
+        const TOUR_STEP = 180;
 
         const rosterGrid = document.getElementById('rosterGrid');
         const p1Name = document.getElementById('p1Name');
@@ -714,12 +721,36 @@
 
         function playVoice(src) {
             if (!src) return;
-            try {
+
+            // Rutas alternativas para Rugal por si el MP3 está en otra carpeta.
+            const candidates = src.toLowerCase().includes('rugal.mp3')
+                ? ['assets/voices/rugal.mp3', 'assets/rugal.mp3', 'rugal.mp3']
+                : [src];
+
+            let candidateIndex = 0;
+
+            const tryNextSource = () => {
+                if (candidateIndex >= candidates.length) {
+                    console.warn('No se pudo cargar rugal.mp3. Comprueba la ubicación y el nombre del archivo.');
+                    sfxVoice.onerror = null;
+                    return;
+                }
+
                 sfxVoice.pause();
-                sfxVoice.src = src;
+                sfxVoice.onerror = null;
+                sfxVoice.src = candidates[candidateIndex++];
                 sfxVoice.currentTime = 0;
-                sfxVoice.play().catch(e => {});
-            } catch(e) {}
+                sfxVoice.onerror = () => tryNextSource();
+
+                const promise = sfxVoice.play();
+                if (promise && promise.catch) promise.catch(() => {});
+            };
+
+            try {
+                tryNextSource();
+            } catch (e) {
+                console.warn('Error al reproducir la voz:', e);
+            }
         }
 
         function playSelectSound() {
@@ -746,34 +777,74 @@
                 loadTrack(0);
                 bgmAudio.play().catch(() => {});
                 playBtn.textContent = "⏸";
-                startAutoTour();
+                startCharacterTours();
             } catch(e) {}
         });
 
-        // RECORRIDO AUTOMÁTICO CADA 5 SEGUNDOS (TERMINA EN UNO ALEATORIO)
-        function startAutoTour() {
-            if (autoTourInterval) clearInterval(autoTourInterval);
-            
-            autoTourInterval = setInterval(() => {
-                if (p1Selected && p2Selected) {
-                    clearInterval(autoTourInterval);
+        // RULETA DE PERSONAJES: cada jugador recorre los 10 luchadores
+        // durante 3 segundos y termina mostrando uno aleatorio.
+        function stopPlayerTour(player) {
+            if (player === 1) {
+                if (p1TourInterval) clearInterval(p1TourInterval);
+                if (p1TourTimeout) clearTimeout(p1TourTimeout);
+                p1TourInterval = null;
+                p1TourTimeout = null;
+            } else {
+                if (p2TourInterval) clearInterval(p2TourInterval);
+                if (p2TourTimeout) clearTimeout(p2TourTimeout);
+                p2TourInterval = null;
+                p2TourTimeout = null;
+            }
+        }
+
+        function startPlayerTour(player) {
+            stopPlayerTour(player);
+            if ((player === 1 && p1Selected) || (player === 2 && p2Selected)) return;
+
+            if (player === 1) p1PreviewIndex = Math.floor(Math.random() * characters.length);
+            else p2PreviewIndex = Math.floor(Math.random() * characters.length);
+            updatePreviews();
+
+            const tick = () => {
+                if ((player === 1 && p1Selected) || (player === 2 && p2Selected)) {
+                    stopPlayerTour(player);
                     return;
                 }
+                if (player === 1) p1PreviewIndex = (p1PreviewIndex + 1) % characters.length;
+                else p2PreviewIndex = (p2PreviewIndex + 1) % characters.length;
+                playRetroNavBeep();
+                updatePreviews();
+            };
 
-                if (!p1Selected) {
-                    // Mover cursor de forma aleatoria o secuencial para P1
-                    cursorIndex = Math.floor(Math.random() * characters.length);
-                    playRetroNavBeep();
-                    updatePreviews();
-                    renderRosterGrid();
-                } else if (!p2Selected) {
-                    // Mover cursor de forma aleatoria o secuencial para P2
-                    cursorIndex = Math.floor(Math.random() * characters.length);
-                    playRetroNavBeep();
+            if (player === 1) p1TourInterval = setInterval(tick, TOUR_STEP);
+            else p2TourInterval = setInterval(tick, TOUR_STEP);
+
+            const finish = () => {
+                stopPlayerTour(player);
+                if ((player === 1 && !p1Selected) || (player === 2 && !p2Selected)) {
+                    // Al terminar los 3 segundos, se queda en un personaje al azar.
+                    if (player === 1) p1PreviewIndex = Math.floor(Math.random() * characters.length);
+                    else p2PreviewIndex = Math.floor(Math.random() * characters.length);
                     updatePreviews();
                     renderRosterGrid();
                 }
-            }, 5000);
+            };
+            if (player === 1) p1TourTimeout = setTimeout(finish, TOUR_DURATION);
+            else p2TourTimeout = setTimeout(finish, TOUR_DURATION);
+        }
+
+        function startCharacterTours() {
+            // P1 y P2 hacen su recorrido inicial al mismo tiempo.
+            // Al terminar, ambos quedan disponibles para seleccionar.
+            // Elegir P1 NO vuelve a iniciar el recorrido de P2.
+            stopCharacterTours();
+            startPlayerTour(1);
+            startPlayerTour(2);
+        }
+
+        function stopCharacterTours() {
+            stopPlayerTour(1);
+            stopPlayerTour(2);
         }
 
         // MUSIC CONTROLS
@@ -820,10 +891,19 @@
             turnPrompt.textContent = "HIROU: SELECCIONA TU PELEADOR";
             turnPrompt.style.borderColor = "var(--kof-gold)";
             turnPrompt.style.color = "#fff";
+            p1PreviewIndex = Math.floor(Math.random() * characters.length);
+            p2PreviewIndex = Math.floor(Math.random() * characters.length);
             updatePreviews();
             renderRosterGrid();
             playSelectSound();
-            startAutoTour();
+            startCharacterTours();
+        }
+
+        // Sincroniza el cursor manual con la vista previa del jugador que debe elegir.
+        function syncManualPreview() {
+            if (!p1Selected) p1PreviewIndex = cursorIndex;
+            else if (!p2Selected) p2PreviewIndex = cursorIndex;
+            updatePreviews();
         }
 
         // KEYBOARD NAVIGATION MANUAL
@@ -836,22 +916,22 @@
             if (e.key === 'ArrowRight') {
                 cursorIndex = (cursorIndex + 1) % total;
                 playRetroNavBeep();
-                updatePreviews();
+                syncManualPreview();
                 renderRosterGrid();
             } else if (e.key === 'ArrowLeft') {
                 cursorIndex = (cursorIndex - 1 + total) % total;
                 playRetroNavBeep();
-                updatePreviews();
+                syncManualPreview();
                 renderRosterGrid();
             } else if (e.key === 'ArrowDown') {
                 cursorIndex = (cursorIndex + cols) % total;
                 playRetroNavBeep();
-                updatePreviews();
+                syncManualPreview();
                 renderRosterGrid();
             } else if (e.key === 'ArrowUp') {
                 cursorIndex = (cursorIndex - cols + total) % total;
                 playRetroNavBeep();
-                updatePreviews();
+                syncManualPreview();
                 renderRosterGrid();
             } else if (e.key === 'Enter' || e.key === ' ') {
                 handleSelection(characters[cursorIndex]);
@@ -900,10 +980,10 @@
                 });
 
                 slot.addEventListener('mouseenter', () => {
-                    if (cursorIndex !== index && !p2Selected) {
+                    if (cursorIndex !== index) {
                         cursorIndex = index;
                         playRetroNavBeep();
-                        updatePreviews();
+                        syncManualPreview();
                         renderRosterGrid();
                     }
                 });
@@ -913,17 +993,13 @@
         }
 
         function updatePreviews() {
-            const currentChar = characters[cursorIndex] || characters[0];
-
-            // Preview Player 1
-            const charP1 = p1Selected || (!p1Selected ? currentChar : characters[0]);
+            const charP1 = p1Selected || characters[p1PreviewIndex] || characters[0];
             p1Name.textContent = charP1.name;
             p1Team.textContent = charP1.team;
             p1PortraitImg.src = charP1.img;
             p1Banner.textContent = charP1.label;
 
-            // Preview Player 2
-            const charP2 = p2Selected || (p1Selected ? currentChar : characters[1]);
+            const charP2 = p2Selected || characters[p2PreviewIndex] || characters[1];
             p2Name.textContent = charP2.name;
             p2Team.textContent = charP2.team;
             p2PortraitImg.src = charP2.img;
@@ -933,6 +1009,8 @@
         function handleSelection(character) {
             if (!p1Selected) {
                 p1Selected = character;
+                p1PreviewIndex = characters.findIndex(c => c.id === character.id);
+                stopPlayerTour(1);
                 playSelectSound();
                 playVoice(character.voice);
 
@@ -941,17 +1019,24 @@
                 turnPrompt.style.color = "#00e5ff";
             } else if (!p2Selected) {
                 p2Selected = character;
+                p2PreviewIndex = characters.findIndex(c => c.id === character.id);
+                stopPlayerTour(2);
                 playSelectSound();
                 playVoice(character.voice);
 
                 turnPrompt.textContent = "¡DUELO LISTO! HAZ CLIC EN LOS STANDEES PARA VISITAR XATSPACE";
                 turnPrompt.style.borderColor = "#ffcc00";
                 turnPrompt.style.color = "#ffcc00";
-                if (autoTourInterval) clearInterval(autoTourInterval);
+                stopCharacterTours();
             }
 
             updatePreviews();
             renderRosterGrid();
+
+            // Al elegir P1 no se inicia otro recorrido: P2 elige directamente.
+            if (p1Selected && p2Selected) {
+                stopCharacterTours();
+            }
         }
 
         // Initial setup
